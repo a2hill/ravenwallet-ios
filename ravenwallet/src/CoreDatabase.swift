@@ -879,10 +879,10 @@ class CoreDatabase {
         }
     }
     
-    func removeFromWhitelist(assetName: String, _ callback: @escaping ()->Void) {
+    func removeFromWhitelist(assetName: String, _ callback: (()->Void)? = nil) {
         queue.async {
             self.removeAsset(name: assetName, from: .whitelist)
-            callback()
+            callback?()
         }
     }
     
@@ -909,10 +909,10 @@ class CoreDatabase {
         }
     }
     
-    func removeFromBlacklist(assetName: String, _ callback: @escaping () -> Void) {
+    func removeFromBlacklist(assetName: String, _ callback: (()->Void)? = nil) {
         queue.async {
             self.removeAsset(name: assetName, from: .blacklist)
-            callback()
+            callback?()
         }
     }
     

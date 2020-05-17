@@ -63,7 +63,22 @@ class AssetManager {
         })
     }
     
-    func loadWhitelist(callback: ((Set<String>) -> Void)? = nil) {
+//    func loadWhitelist(callback: ((Set<String>) -> Void)? = nil) {
+//        db?.loadWhitelist(callback: { [weak self] whitelist in
+//
+//            self?.whitelist.removeAll(keepingCapacity: true)
+//
+//            for asset in whitelist {
+//                self?.whitelist.insert(asset)
+//            }
+//
+//            if let whitelist = self?.whitelist {
+//                callback?(whitelist)
+//            }
+//        })
+//    }
+    
+    private func loadWhitelist(callback: (() -> Void)? = nil) {
         db?.loadWhitelist(callback: { [weak self] whitelist in
             
             self?.whitelist.removeAll(keepingCapacity: true)
@@ -72,26 +87,38 @@ class AssetManager {
                 self?.whitelist.insert(asset)
             }
             
-            if let whitelist = self?.whitelist {
-                callback?(whitelist)
-            }
+            callback?()
         })
     }
     
-    func loadBlacklist(callback: ((Set<String>) -> Void)? = nil) {
+//    func loadBlacklist(callback: ((Set<String>) -> Void)? = nil) {
+//        db?.loadBlacklist(callback: { [weak self] blacklist in
+//
+//            self?.blacklist.removeAll(keepingCapacity: true)
+//
+//            for asset in blacklist {
+//                self?.whitelist.insert(asset)
+//            }
+//
+//            if let blacklist = self?.blacklist {
+//                callback?(blacklist)
+//            }
+//        })
+//    }
+    
+    private func loadBlacklist(callback: (() -> Void)? = nil) {
         db?.loadBlacklist(callback: { [weak self] blacklist in
 
             self?.blacklist.removeAll(keepingCapacity: true)
 
             for asset in blacklist {
-                self?.whitelist.insert(asset)
+                self?.blacklist.insert(asset)
             }
 
-            if let blacklist = self?.blacklist {
-                callback?(blacklist)
-            }
+            callback?()
         })
     }
+
     
     func updateAssetOrder(assets:[Asset]) {
         var orderId = assets.count
@@ -112,7 +139,47 @@ class AssetManager {
         })
     }
     
-    func setFilter(_ assetFilter: AssetFilter) {
+    func setAssetFilter(_ assetFilter: AssetFilter) {
         self.assetFilter = assetFilter
+    }
+    
+    func addToWhitelist(assetName: String) {
+        let result = whitelist.insert(assetName)
+        
+        guard result.0 else { return } // Check that the name was inserted
+        
+        db?.addToWhitelist(assetName: assetName) { [weak self] success in
+            
+            // Reload the whitelist if the transaction is not successful so that we stay in coordination with the db
+            if !success {
+                self?.loadWhitelist()
+            }
+        }
+    }
+    
+    func removeFromWhitelist(assetName: String) {
+        guard let _ = whitelist.remove(assetName) else { return }
+            
+        db?.removeFromWhitelist(assetName: assetName)
+    }
+    
+    func addToBlacklist(assetName: String) {
+        let result = blacklist.insert(assetName)
+        
+        guard result.0 else { return } // Check that the name was inserted
+        
+        db?.addToBlacklist(assetName: assetName) { [weak self] success in
+            
+            // Reload the whitelist if the transaction is not successful so that we stay in coordination with the db
+            if !success {
+                self?.loadBlacklist()
+            }
+        }
+    }
+    
+    func removeFromBlacklist(assetName: String) {
+        guard let _ = blacklist.remove(assetName) else { return }
+            
+        db?.removeFromBlacklist(assetName: assetName)
     }
 }

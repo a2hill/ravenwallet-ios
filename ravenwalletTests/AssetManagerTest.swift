@@ -13,71 +13,115 @@ import Foundation
 
 class AssetManagerTest: XCTestCase {
     
-    let db = CoreDatabase()
+    var db: CoreDatabase!
+    let dbLock = DispatchSemaphore(value: 1)
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-        let lock = DispatchSemaphore(value: 1)
+        db = CoreDatabase()
         
-        lock.wait()
+        dbLock.wait()
         db.clearBlacklist {
-            lock.signal()
+            self.dbLock.signal()
         }
         
-        lock.wait()
+        dbLock.wait()
         db.clearWhitelist {
-            lock.signal()
+            self.dbLock.signal()
         }
     }
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+        db.close()
+        db = nil
     }
 
     func testDbWhitelist() throws {
-        let db = CoreDatabase()
         let loadExpectation = self.expectation(description: "Load empty whitelist")
+        dbLock.wait()
         db.loadWhitelist { whitelist in
             XCTAssertEqual(whitelist.count, 0, "whitelist should be empty")
+            self.dbLock.signal()
             loadExpectation.fulfill()
         }
         
         waitForExpectations(timeout: 1.0)
         
         var whitelist = ["Test", "Test2", "Test3"]
-        let lock = DispatchSemaphore(value: 1)
         for asset in whitelist {
-            lock.wait()
+            dbLock.wait()
             db.addToWhitelist(assetName: asset) { _ in
-                lock.signal()
+                self.dbLock.signal()
             }
         }
         
         let reloadExpectation = self.expectation(description: "Load populated whitelist")
+        dbLock.wait()
         db.loadWhitelist { returnList in
             XCTAssertEqual(returnList.count, whitelist.count, "whitelist should have \(whitelist.count) values")
+            let sortedReturnList = returnList.sorted()
+            whitelist.sort()
+            
+            for (index, value) in whitelist.enumerated() {
+                XCTAssertEqual(value, sortedReturnList[index])
+            }
+            self.dbLock.signal()
             reloadExpectation.fulfill()
         }
         waitForExpectations(timeout: 1.0)
         
         
-        lock.wait()
+        let noRemoveExpectation = self.expectation(description: "Wait for removal operation")
+        dbLock.wait()
         db.addToWhitelist(assetName: "Test3") { success in
             XCTAssertFalse(success, "Duplicate assets should not be added")
-            lock.signal()
+            self.dbLock.signal()
+            noRemoveExpectation.fulfill()
         }
+        waitForExpectations(timeout: 1.0)
         
-        let recoundExpectation = self.expectation(description: "Load whitelist again to see if there are changes")
-        db.loadWhitelist { list in
-            XCTAssertEqual(list.count, whitelist.count, "Last whitelist addition should not have made it into the db")
-            recoundExpectation.fulfill()
+        let recountExpectation = self.expectation(description: "Load whitelist again to see if there are changes")
+        dbLock.wait()
+        db.loadWhitelist { returnList in
+            XCTAssertEqual(returnList.count, whitelist.count, "Last whitelist addition should not have made it into the db")
+            let sortedReturnList = returnList.sorted()
+            whitelist.sort()
+            
+            for (index, value) in whitelist.enumerated() {
+                XCTAssertEqual(value, sortedReturnList[index])
+            }
+            self.dbLock.signal()
+            recountExpectation.fulfill()
         }
+        waitForExpectations(timeout: 1.0)
         
+        let assetToRemove = "Test3"
+        whitelist.removeAll(where: {$0 == assetToRemove})
+        let removeExpectation = self.expectation(description: "Wait for removal operation")
+        dbLock.wait()
+        db.removeFromWhitelist(assetName: assetToRemove) {
+            self.dbLock.signal()
+            removeExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 1.0)
+        
+        let removedExpectation = self.expectation(description: "Wait for reload of whitelist")
+        dbLock.wait()
+        db.loadWhitelist { returnList in
+            XCTAssertEqual(returnList.count, whitelist.count, "Whitelist removal should have committed in the db")
+            let sortedReturnList = returnList.sorted()
+            whitelist.sort()
+            
+            for (index, value) in whitelist.enumerated() {
+                XCTAssertEqual(value, sortedReturnList[index])
+            }
+            self.dbLock.signal()
+            removedExpectation.fulfill()
+        }
         waitForExpectations(timeout: 1.0)
     }
     
     func testDbBlacklist() throws {
-        let db = CoreDatabase()
         let loadExpectation = self.expectation(description: "Load empty blacklist")
         db.loadBlacklist { blacklist in
             XCTAssertEqual(blacklist.count, 0, "blacklist should be empty")
@@ -87,46 +131,76 @@ class AssetManagerTest: XCTestCase {
         waitForExpectations(timeout: 1.0)
         
         var blacklist = ["Test", "Test2", "Test3"]
-        let lock = DispatchSemaphore(value: 1)
         for asset in blacklist {
-            lock.wait()
+            dbLock.wait()
             db.addToBlacklist(assetName: asset) { _ in
-                lock.signal()
+                self.dbLock.signal()
             }
         }
         
         let reloadExpectation = self.expectation(description: "Load populated blacklist")
+        dbLock.wait()
         db.loadBlacklist { returnList in
             XCTAssertEqual(returnList.count, blacklist.count, "blacklist should have \(blacklist.count) values")
+            let sortedReturnList = returnList.sorted()
+            blacklist.sort()
+            
+            for (index, value) in blacklist.enumerated() {
+                XCTAssertEqual(value, sortedReturnList[index])
+            }
+            self.dbLock.signal()
             reloadExpectation.fulfill()
         }
         waitForExpectations(timeout: 1.0)
         
         
-        lock.wait()
+        let noRemoveExpectation = self.expectation(description: "Wait for removal operation")
+        dbLock.wait()
         db.addToBlacklist(assetName: "Test3") { success in
             XCTAssertFalse(success, "Duplicate assets should not be added")
-            lock.signal()
+            self.dbLock.signal()
+            noRemoveExpectation.fulfill()
         }
+        waitForExpectations(timeout: 1.0)
         
-        let recoundExpectation = self.expectation(description: "Load blacklist again to see if there are changes")
-        db.loadBlacklist { list in
-            XCTAssertEqual(list.count, blacklist.count, "Last blacklist addition should not have made it into the db")
-            recoundExpectation.fulfill()
+        let recountExpectation = self.expectation(description: "Load blacklist again to see if there are changes")
+        dbLock.wait()
+        db.loadBlacklist { returnList in
+            XCTAssertEqual(returnList.count, blacklist.count, "Last blacklist addition should not have made it into the db")
+            let sortedReturnList = returnList.sorted()
+            blacklist.sort()
+            
+            for (index, value) in blacklist.enumerated() {
+                XCTAssertEqual(value, sortedReturnList[index])
+            }
+            self.dbLock.signal()
+            recountExpectation.fulfill()
         }
+        waitForExpectations(timeout: 1.0)
         
+        let assetToRemove = "Test3"
+        blacklist.removeAll(where: {$0 == assetToRemove})
+        let removeExpectation = self.expectation(description: "Wait for removal operation")
+        dbLock.wait()
+        db.removeFromBlacklist(assetName: assetToRemove) {
+            self.dbLock.signal()
+            removeExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 1.0)
+        
+        let removedExpectation = self.expectation(description: "Wait for reload of blacklist")
+        dbLock.wait()
+        db.loadBlacklist { returnList in
+            XCTAssertEqual(returnList.count, blacklist.count, "blacklist removal should have committed in the db")
+            let sortedReturnList = returnList.sorted()
+            blacklist.sort()
+            
+            for (index, value) in blacklist.enumerated() {
+                XCTAssertEqual(value, sortedReturnList[index])
+            }
+            self.dbLock.signal()
+            removedExpectation.fulfill()
+        }
         waitForExpectations(timeout: 1.0)
     }
-    
-    func testAssetManagerWhitelist() {
-        
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
 }
