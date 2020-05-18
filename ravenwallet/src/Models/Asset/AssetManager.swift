@@ -42,8 +42,8 @@ class AssetManager {
             UserDefaults.assetFilter = assetFilter
         }
     }
-    private var whitelist: Set<String> = []
-    private var blacklist: Set<String> = []
+    var whitelist: Set<String> = []
+    var blacklist: Set<String> = []
     
     private init() {
         db = CoreDatabase()

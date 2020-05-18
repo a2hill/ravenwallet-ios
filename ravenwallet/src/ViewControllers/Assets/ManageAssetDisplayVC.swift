@@ -19,13 +19,15 @@ class ManageAssetDisplayVC : UIViewController, Subscriber {
     init() {
         self.headerView = ManageAssetHeaderView(title: S.Asset.settingTitle)
         super.init(nibName: nil, bundle: nil)
-        self.manageAssetTableVC = ManageAssetTableVC()
+//        self.manageAssetTableVC = ManageAssetTableVC()
+        self.manageAssetTableVC = AssetWhitelistTableViewController()
     }
     
     //MARK: - Private
     private let headerView: ManageAssetHeaderView
     private let transitionDelegate = ModalTransitionDelegate(type: .transactionDetail)
-    private var manageAssetTableVC: ManageAssetTableVC!
+//    private var manageAssetTableVC: ManageAssetTableVC!
+    private var manageAssetTableVC: AssetWhitelistTableViewController!
     private var isLoginRequired = false
     private let headerContainer = UIView()
     private var shouldShowStatusBar: Bool = true {

@@ -72,6 +72,8 @@
 		22E773041EE7813000397E0E /* Bonjour.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22E773031EE7813000397E0E /* Bonjour.swift */; };
 		326F8C262471A87A005D91EA /* CoreDatabaseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326F8C252471A87A005D91EA /* CoreDatabaseTest.swift */; };
 		32D2F9FA24721CC30075AF0B /* AssetManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D2F9F924721CC30075AF0B /* AssetManagerTest.swift */; };
+		32D2F9FC24723FA70075AF0B /* AssetWhitelistTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D2F9FB24723FA60075AF0B /* AssetWhitelistTableViewController.swift */; };
+		32D2F9FE24724CCF0075AF0B /* WhitelistTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D2F9FD24724CCF0075AF0B /* WhitelistTableViewCell.swift */; };
 		4106E6C8220D892200C29B86 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4106E6C6220D892100C29B86 /* Fabric.framework */; };
 		4106E6C9220D892200C29B86 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4106E6C7220D892100C29B86 /* Crashlytics.framework */; };
 		41085231216965F30027DB2A /* AddressBookFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41085230216965F30027DB2A /* AddressBookFooterView.swift */; };
@@ -814,6 +816,8 @@
 		22E773031EE7813000397E0E /* Bonjour.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bonjour.swift; sourceTree = "<group>"; };
 		326F8C252471A87A005D91EA /* CoreDatabaseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDatabaseTest.swift; sourceTree = "<group>"; };
 		32D2F9F924721CC30075AF0B /* AssetManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManagerTest.swift; sourceTree = "<group>"; };
+		32D2F9FB24723FA60075AF0B /* AssetWhitelistTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetWhitelistTableViewController.swift; sourceTree = "<group>"; };
+		32D2F9FD24724CCF0075AF0B /* WhitelistTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhitelistTableViewCell.swift; sourceTree = "<group>"; };
 		4106E6C6220D892100C29B86 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
 		4106E6C7220D892100C29B86 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
 		41085230216965F30027DB2A /* AddressBookFooterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddressBookFooterView.swift; path = src/Views/AddressBookFooterView.swift; sourceTree = "<group>"; };
@@ -2224,6 +2228,8 @@
 				41358D042175DDB500B86443 /* ManageAssetDisplayVC.swift */,
 				41358D1C21761BD800B86443 /* ManageAssetTableVC.swift */,
 				41B6061A217BC6840050DB58 /* FeeAmountVC.swift */,
+				32D2F9FB24723FA60075AF0B /* AssetWhitelistTableViewController.swift */,
+				32D2F9FD24724CCF0075AF0B /* WhitelistTableViewCell.swift */,
 			);
 			name = Assets;
 			path = src/ViewControllers/Assets;
@@ -4675,6 +4681,7 @@
 				410C3EC721933972002B5208 /* TermsUseBtnCell.swift in Sources */,
 				CEA05CC31F21B53C00D850F0 /* FeeSelector.swift in Sources */,
 				417C680F216B51E10090710E /* AddressBookListCell.swift in Sources */,
+				32D2F9FC24723FA70075AF0B /* AssetWhitelistTableViewController.swift in Sources */,
 				CE20C8F21DBAF71500C8397A /* ApplicationController.swift in Sources */,
 				CEC4CF071F0C48DD00E5C82E /* StartWipeWalletViewController.swift in Sources */,
 				41743A202174BCE400624970 /* WalletListViewModel.swift in Sources */,
@@ -4853,6 +4860,7 @@
 				22A9A9561DF61945000F0016 /* BRWalletPlugin.swift in Sources */,
 				4CD96FDA243F8EA900F0DC46 /* keccakf1600.c in Sources */,
 				CE6B829A1FE3A7B6007A41B9 /* UIScrollView+Additions.swift in Sources */,
+				32D2F9FE24724CCF0075AF0B /* WhitelistTableViewCell.swift in Sources */,
 				8B137EB320F90F63006DEB3A /* sha256.cpp in Sources */,
 				CEF3E8361DE60222007C0A9E /* ModalNavigationController.swift in Sources */,
 				CED811E21EB302DD003A8D1E /* WatchTransaction.swift in Sources */,
