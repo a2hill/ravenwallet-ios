@@ -328,10 +328,13 @@ extension UserDefaults {
     
     static var assetFilter: AssetManager.AssetFilter {
         get {
-            defaults.object(forKey: "assetFilter") as? AssetManager.AssetFilter ?? .manual
+            if let filterString = defaults.string(forKey: "assetFilter") {
+                return AssetManager.AssetFilter(rawValue: filterString) ?? .manual
+            }
+            return .manual
         }
         set {
-            defaults.set(newValue, forKey: "assetFilter")
+            defaults.set(newValue.rawValue, forKey: "assetFilter")
         }
     }
 }

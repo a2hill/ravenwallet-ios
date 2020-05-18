@@ -71,6 +71,7 @@
 		22C431361DF8A6DF0017CAEA /* BRAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C431351DF8A6DF0017CAEA /* BRAPIClientTests.swift */; };
 		22E773041EE7813000397E0E /* Bonjour.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22E773031EE7813000397E0E /* Bonjour.swift */; };
 		326F8C262471A87A005D91EA /* CoreDatabaseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326F8C252471A87A005D91EA /* CoreDatabaseTest.swift */; };
+		32D2F9FA24721CC30075AF0B /* AssetManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32D2F9F924721CC30075AF0B /* AssetManagerTest.swift */; };
 		4106E6C8220D892200C29B86 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4106E6C6220D892100C29B86 /* Fabric.framework */; };
 		4106E6C9220D892200C29B86 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4106E6C7220D892100C29B86 /* Crashlytics.framework */; };
 		41085231216965F30027DB2A /* AddressBookFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41085230216965F30027DB2A /* AddressBookFooterView.swift */; };
@@ -812,6 +813,7 @@
 		22C431351DF8A6DF0017CAEA /* BRAPIClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAPIClientTests.swift; sourceTree = "<group>"; };
 		22E773031EE7813000397E0E /* Bonjour.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bonjour.swift; sourceTree = "<group>"; };
 		326F8C252471A87A005D91EA /* CoreDatabaseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDatabaseTest.swift; sourceTree = "<group>"; };
+		32D2F9F924721CC30075AF0B /* AssetManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManagerTest.swift; sourceTree = "<group>"; };
 		4106E6C6220D892100C29B86 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
 		4106E6C7220D892100C29B86 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
 		41085230216965F30027DB2A /* AddressBookFooterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddressBookFooterView.swift; path = src/Views/AddressBookFooterView.swift; sourceTree = "<group>"; };
@@ -3221,6 +3223,7 @@
 				CEEC70971E96BF8800EF788E /* DefaultCurrencyTests.swift */,
 				41FB22452211F0AC00C072A5 /* TransferAssetTest.swift */,
 				326F8C252471A87A005D91EA /* CoreDatabaseTest.swift */,
+				32D2F9F924721CC30075AF0B /* AssetManagerTest.swift */,
 			);
 			path = ravenwalletTests;
 			sourceTree = "<group>";
@@ -4950,6 +4953,7 @@
 			files = (
 				22C4312E1DF89D970017CAEA /* BRHTTPServerTests.swift in Sources */,
 				CE6DCC2B1E63D6290044257B /* WalletCreationTests.swift in Sources */,
+				32D2F9FA24721CC30075AF0B /* AssetManagerTest.swift in Sources */,
 				CEC6F8471E8878B6000795B8 /* PaymentRequestTests.swift in Sources */,
 				22C431361DF8A6DF0017CAEA /* BRAPIClientTests.swift in Sources */,
 				CEDD8F101E575DD4007A4123 /* WalletAuthenticationTests.swift in Sources */,

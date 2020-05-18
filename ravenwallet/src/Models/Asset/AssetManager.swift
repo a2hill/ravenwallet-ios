@@ -12,7 +12,7 @@ import SystemConfiguration
 
 class AssetManager {
     
-    enum AssetFilter {
+    enum AssetFilter: String {
         case manual
         case whitelist
         case blacklist
@@ -139,9 +139,13 @@ class AssetManager {
         })
     }
     
+    //MARK: Asset Filter
+    
     func setAssetFilter(_ assetFilter: AssetFilter) {
         self.assetFilter = assetFilter
     }
+    
+    //MARK: Asset Filter - Whitelist
     
     func addToWhitelist(assetName: String) {
         let result = whitelist.insert(assetName)
@@ -163,6 +167,14 @@ class AssetManager {
         db?.removeFromWhitelist(assetName: assetName)
     }
     
+    func clearWhitelist() {
+        db?.clearWhitelist {
+            //TODO: Is this necessary?
+        }
+    }
+    
+    //MARK: Asset Filter - Blacklist
+    
     func addToBlacklist(assetName: String) {
         let result = blacklist.insert(assetName)
         
@@ -181,5 +193,11 @@ class AssetManager {
         guard let _ = blacklist.remove(assetName) else { return }
             
         db?.removeFromBlacklist(assetName: assetName)
+    }
+    
+    func clearBlacklist() {
+        db?.clearBlacklist {
+            //TODO: Is this necessary?
+        }
     }
 }
