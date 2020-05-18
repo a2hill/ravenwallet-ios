@@ -11,7 +11,7 @@ import Foundation
 
 @testable import Ravencoin
 
-class AssetManagerTest: XCTestCase {
+class CoreDatabaseTest: XCTestCase {
     
     var db: CoreDatabase!
     let dbLock = DispatchSemaphore(value: 1)
