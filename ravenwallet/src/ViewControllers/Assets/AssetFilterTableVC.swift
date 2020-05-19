@@ -1,5 +1,5 @@
 //
-//  AssetWhitelistTableViewController.swift
+//  AssetFilterTableVC.swift
 //  Ravencoin
 //
 //  Created by Austin Hill on 5/17/20.
@@ -8,11 +8,11 @@
 
 import UIKit
 
-class AssetWhitelistTableViewController: UITableViewController {
+class AssetFilterTableVC: UITableViewController {
     
     enum Section: Int, CaseIterable {
-        case whitelist = 0
-        case nonWhitelist = 1
+        case inList = 0
+        case excludedFromList = 1
         
         init?(for indexPath: IndexPath) {
             if let section = Section(rawValue: indexPath.section) {
@@ -27,26 +27,14 @@ class AssetWhitelistTableViewController: UITableViewController {
         }
     }
     
-    private let emptyMessage = UILabel.wrapping(font: .customBody(size: 16.0), color: .grayTextTint)
-    private let assetManager = AssetManager.shared
+    internal var adapter: AssetFilterAdapterProtocol!
     
-    private var whitelistNames: [String] {
-        assetManager.whitelist.sorted()
-    }
-    private var nonWhitelistNames: [String] {
-        assetManager.assetList.compactMap { asset in
-            if !assetManager.whitelist.contains(asset.name) {
-                return asset.name
-            }else {
-                return nil
-            }
-        }
-    }
-
+    private let emptyMessage = UILabel.wrapping(font: .customBody(size: 16.0), color: .grayTextTint)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.register(WhitelistTableViewCell.self, forCellReuseIdentifier: WhitelistTableViewCell.reuseIdentifier)
+        tableView.register(AssetFilterCell.self, forCellReuseIdentifier: AssetFilterCell.reuseIdentifier)
 
         tableView.separatorStyle = .none
         tableView.estimatedRowHeight = 60.0
@@ -64,7 +52,7 @@ class AssetWhitelistTableViewController: UITableViewController {
 }
 
 // MARK: - Styling
-extension AssetWhitelistTableViewController {
+extension AssetFilterTableVC {
     
     private func setContentInset() {
         let insets = UIEdgeInsets(top: manageAssetHeaderHeight - 64.0 - (E.isIPhoneXOrLater ? 28.0 : 0.0), left: 0, bottom: C.padding[2], right: 0)
@@ -76,11 +64,11 @@ extension AssetWhitelistTableViewController {
         let footerText: String
         
         switch section {
-        case .whitelist:
-            guard whitelistNames.count == 0 else { return nil }
-            footerText = S.Asset.whitelistEmpty
-        case .nonWhitelist:
-            guard nonWhitelistNames.count == 0 else { return nil }
+        case .inList:
+            guard adapter.includedList.count == 0 else { return nil }
+            footerText = adapter.emptyListText()
+        case .excludedFromList:
+            guard adapter.excludedList.count == 0 else { return nil }
             footerText = S.Asset.emptyMessage
         }
         
@@ -104,10 +92,10 @@ extension AssetWhitelistTableViewController {
         guard let section = Section(rawValue: section) else { return nil }
         
         switch section {
-        case .whitelist:
-            return S.Asset.whitelistTitle
+        case .inList:
+            return adapter.titleForList()
             
-        case .nonWhitelist:
+        case .excludedFromList:
             return S.Asset.availableAssets
         }
     }
@@ -126,7 +114,7 @@ extension AssetWhitelistTableViewController {
 }
 
 // MARK: - Data source
-extension AssetWhitelistTableViewController {
+extension AssetFilterTableVC {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
@@ -138,27 +126,27 @@ extension AssetWhitelistTableViewController {
         guard let section = Section(rawValue: section) else { return 0 }
         
         switch section {
-        case .whitelist:
-            return whitelistNames.count
+        case .inList:
+            return adapter.includedList.count
             
-        case .nonWhitelist:
-            return nonWhitelistNames.count
+        case .excludedFromList:
+            return adapter.excludedList.count
         }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: WhitelistTableViewCell.reuseIdentifier, for: indexPath) as! WhitelistTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: AssetFilterCell.reuseIdentifier, for: indexPath) as! AssetFilterCell
         
         guard let section = Section(for: indexPath) else { return cell }
         
         let assetName: String
         
         switch section {
-        case .whitelist:
-            assetName = whitelistNames[indexPath.row]
+        case .inList:
+            assetName = adapter.includedList[indexPath.row]
             
-        case .nonWhitelist:
-            assetName = nonWhitelistNames[indexPath.row]
+        case .excludedFromList:
+            assetName = adapter.excludedList[indexPath.row]
         }
         
         cell.assetName = assetName
@@ -167,21 +155,21 @@ extension AssetWhitelistTableViewController {
 }
 
 // MARK: - Interaction
-extension AssetWhitelistTableViewController {
+extension AssetFilterTableVC {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let section = Section(for: indexPath) else { return }
         
         switch section {
-        case .whitelist:
+        case .inList:
 
-            let assetName = whitelistNames[indexPath.row]
-            assetManager.removeFromWhitelist(assetName: assetName)
+            let assetName = adapter.includedList[indexPath.row]
+            adapter.removeFromList(assetName)
             tableView.reloadData()
             
-        case .nonWhitelist:
-            let assetName = nonWhitelistNames[indexPath.row]
-            assetManager.addToWhitelist(assetName: assetName)
+        case .excludedFromList:
+            let assetName = adapter.excludedList[indexPath.row]
+            adapter.addToList(assetName)
             tableView.reloadData()
         }
     }
@@ -191,8 +179,8 @@ extension AssetWhitelistTableViewController {
         // Return false if you do not want the specified item to be editable.
         guard let section = Section(for: indexPath) else { return false}
         switch section {
-        case .whitelist: return true
-        case .nonWhitelist: return false
+        case .inList: return true
+        case .excludedFromList: return false
         }
     }
 
@@ -202,8 +190,8 @@ extension AssetWhitelistTableViewController {
         
         if editingStyle == .delete {
             // Delete the row from the data source
-            if section == .whitelist {
-                assetManager.whitelist.remove(whitelistNames[indexPath.row])
+            if section == .inList {
+                adapter.removeFromList(adapter.includedList[indexPath.row])
                 tableView.deleteRows(at: [indexPath], with: .fade)
             }
         } else if editingStyle == .insert {

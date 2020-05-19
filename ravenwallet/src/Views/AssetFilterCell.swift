@@ -1,5 +1,5 @@
 //
-//  WhitelistTableViewCell.swift
+//  AssetFilterCell.swift
 //  Ravencoin
 //
 //  Created by Austin Hill on 5/17/20.
@@ -8,8 +8,8 @@
 
 import UIKit
 
-class WhitelistTableViewCell: UITableViewCell {
-    static var reuseIdentifier = "whitelistTableViewCell"
+class AssetFilterCell: UITableViewCell {
+    static var reuseIdentifier = "assetFilterCell"
     
     var assetName: String? {
         didSet {
