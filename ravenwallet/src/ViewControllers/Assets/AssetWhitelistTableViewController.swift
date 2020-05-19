@@ -78,7 +78,7 @@ extension AssetWhitelistTableViewController {
         switch section {
         case .whitelist:
             guard whitelistNames.count == 0 else { return nil }
-            footerText = "TODO"
+            footerText = S.Asset.whitelistEmpty
         case .nonWhitelist:
             guard nonWhitelistNames.count == 0 else { return nil }
             footerText = S.Asset.emptyMessage
@@ -105,10 +105,10 @@ extension AssetWhitelistTableViewController {
         
         switch section {
         case .whitelist:
-            return "TODO: Whitelisted Assets"
+            return S.Asset.whitelistTitle
             
         case .nonWhitelist:
-            return "TODO: Available Assets"
+            return S.Asset.availableAssets
         }
     }
     
