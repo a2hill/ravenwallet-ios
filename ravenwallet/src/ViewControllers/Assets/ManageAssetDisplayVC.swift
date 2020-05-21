@@ -13,24 +13,17 @@ import MachO
 let manageAssetHeaderHeight: CGFloat = E.isIPhoneXOrLater ? 90 : 67.0
 
 class ManageAssetDisplayVC : UIViewController, Subscriber {
-
-    //MARK: - Public
-    
-    init() {
-        self.headerView = ManageAssetHeaderView(title: S.Asset.settingTitle)
-        super.init(nibName: nil, bundle: nil)
-//        self.manageAssetTableVC = ManageAssetTableVC()
-        self.manageAssetTableVC = AssetFilterTableVC()
-        self.manageAssetTableVC.adapter = WhitelistAdapter(assetManager: AssetManager.shared)
-    }
     
     //MARK: - Private
     private let headerView: ManageAssetHeaderView
     private let transitionDelegate = ModalTransitionDelegate(type: .transactionDetail)
-//    private var manageAssetTableVC: ManageAssetTableVC!
-    private var manageAssetTableVC: AssetFilterTableVC!
+    private var assetFilterListVC: AssetFilterTableVC!
     private var isLoginRequired = false
     private let headerContainer = UIView()
+    private let filterSelectorView = UIView()
+    private let filterSelectorControl = UISegmentedControl(items: ["Whitelist", "Blacklist"])
+    private let whitelistAdapter: WhitelistAdapter
+    private let blacklistAdapter: BlacklistAdapter
     private var shouldShowStatusBar: Bool = true {
         didSet {
             if oldValue != shouldShowStatusBar {
@@ -40,56 +33,86 @@ class ManageAssetDisplayVC : UIViewController, Subscriber {
             }
         }
     }
+    
+    init() {
+        self.headerView = ManageAssetHeaderView(title: S.Asset.settingTitle)
+        self.assetFilterListVC = AssetFilterTableVC()
+        self.whitelistAdapter = WhitelistAdapter(assetManager: AssetManager.shared)
+        self.blacklistAdapter = BlacklistAdapter(assetManager: AssetManager.shared)
+        
+        super.init(nibName: nil, bundle: nil)
+        showFilterList(AssetManager.shared.assetFilter)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+//MARK: - UIViewController
+extension ManageAssetDisplayVC {
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavigationBar()
-        addManageAssetView()
+        
         addSubviews()
-        addConstraints()
-        setInitialData()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         shouldShowStatusBar = true
     }
+}
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-    }
+//MARK: - View Setup
+extension ManageAssetDisplayVC {
     
-    // MARK: -
-    
-    private func setupNavigationBar() {
-        
-    }
-
     private func addSubviews() {
-        view.addSubview(headerContainer)
-        headerContainer.addSubview(headerView)
-    }
-
-    private func addConstraints() {
-        headerContainer.constrainTopCorners(height: manageAssetHeaderHeight)
-        headerView.constrain(toSuperviewEdges: nil)
-    }
-
-    private func setInitialData() {
-
-    }
-
-    private func addManageAssetView() {
+        
+        // Style
         view.backgroundColor = .whiteTint
-        addChild(manageAssetTableVC, layout: {
+        
+        // Header container
+        view.addSubview(headerContainer)
+        headerContainer.constrainTopCorners(height: manageAssetHeaderHeight)
+        
+        // Header
+        headerContainer.addSubview(headerView)
+        headerView.constrain(toSuperviewEdges: nil)
+        
+        // Selector container
+        view.addSubview(filterSelectorView)
+        filterSelectorView.constrain([
+            filterSelectorView.topAnchor.constraint(equalTo: headerContainer.bottomAnchor),
+            filterSelectorView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            filterSelectorView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            filterSelectorView.heightAnchor.constraint(equalToConstant: 40.0)
+        ])
+        
+        // Selector
+        filterSelectorView.addSubview(filterSelectorControl)
+        filterSelectorControl.constrain([
+            filterSelectorControl.rightAnchor.constraint(equalTo: filterSelectorView.rightAnchor, constant: -C.padding[1]),
+            filterSelectorControl.centerYAnchor.constraint(equalTo: filterSelectorView.centerYAnchor),
+            filterSelectorControl.leftAnchor.constraint(equalTo: filterSelectorView.leftAnchor, constant: C.padding[1]),
+            filterSelectorControl.topAnchor.constraint(equalTo: filterSelectorView.topAnchor, constant: C.padding[1]),
+            filterSelectorControl.bottomAnchor.constraint(equalTo: filterSelectorView.bottomAnchor, constant: -C.padding[1])
+            
+        ])
+        
+        filterSelectorControl.valueChanged = filterSelectorDidChange
+        filterSelectorControl.selectedSegmentIndex = AssetManager.AssetFilter.allCases.firstIndex(of: AssetManager.shared.assetFilter)!
+        
+        // Filter list view controller
+        addChild(assetFilterListVC, layout: {
             if #available(iOS 11.0, *) {
-                manageAssetTableVC.view.constrain([
-                    manageAssetTableVC.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                manageAssetTableVC.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-                manageAssetTableVC.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-                manageAssetTableVC.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+                assetFilterListVC.view.constrain([
+                assetFilterListVC.view.topAnchor.constraint(equalTo: filterSelectorView.bottomAnchor),
+                assetFilterListVC.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+                assetFilterListVC.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+                assetFilterListVC.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
                 ])
             } else {
-                manageAssetTableVC.view.constrain(toSuperviewEdges: nil)
+                assetFilterListVC.view.constrain(toSuperviewEdges: nil)
             }
         })
     }
@@ -105,8 +128,24 @@ class ManageAssetDisplayVC : UIViewController, Subscriber {
     override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
         return .slide
     }
+    
+    private func showFilterList(_ filter: AssetManager.AssetFilter) {
+        switch filter {
+        case .whitelist:
+            self.assetFilterListVC.adapter = self.whitelistAdapter
+        case .blacklist:
+            self.assetFilterListVC.adapter = self.blacklistAdapter
+        }
+    }
+}
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+//MARK: - Handlers
+extension ManageAssetDisplayVC {
+    func filterSelectorDidChange() {
+        let index = filterSelectorControl.selectedSegmentIndex
+        let filter = AssetManager.AssetFilter.allCases[index]
+        AssetManager.shared.setAssetFilter(filter)
+        
+        showFilterList(filter)
     }
 }

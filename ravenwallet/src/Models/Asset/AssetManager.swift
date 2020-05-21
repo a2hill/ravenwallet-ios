@@ -12,8 +12,7 @@ import SystemConfiguration
 
 class AssetManager {
     
-    enum AssetFilter: String {
-        case manual
+    enum AssetFilter: String, CaseIterable {
         case whitelist
         case blacklist
     }
@@ -25,8 +24,6 @@ class AssetManager {
     var showedAssetList:[Asset] {
         get {
             switch assetFilter {
-            case .manual:
-                return assetList.filter({$0.isHidden == false})
                 
             case .whitelist:
                 return assetList.filter({whitelist.contains($0.name)})
@@ -37,7 +34,7 @@ class AssetManager {
         }
     }
     
-    private var assetFilter: AssetFilter {
+    var assetFilter: AssetFilter {
         didSet {
             UserDefaults.assetFilter = assetFilter
         }
@@ -47,10 +44,26 @@ class AssetManager {
     
     private init() {
         db = CoreDatabase()
-        assetFilter = UserDefaults.assetFilter
-        loadAsset()
-        loadWhitelist()
-        loadBlacklist()
+        
+        // From settings, restore the filter previously used
+        if let filterFromSettings = UserDefaults.assetFilter {
+            assetFilter = filterFromSettings
+            loadAsset()
+            loadWhitelist()
+            loadBlacklist()
+        }else {
+            
+            // If there is no previous filter then we will blacklist any previously hidden assets
+            // as a blacklist is analogous to the previous hide/display by default paradigm
+            assetFilter = .blacklist
+            loadAsset() { [weak self] assets in
+                guard let self = self else { return }
+                
+                assets.filter({$0.isHidden}).forEach({self.addToBlacklist(assetName: $0.name)})
+                self.loadWhitelist()
+                self.loadBlacklist()
+            }
+        }
     }
     
     func loadAsset(callBack: (([Asset]) -> Void)? = nil) {

@@ -10,6 +10,8 @@ import Foundation
 
 class WhitelistAdapter: AssetFilterAdapterProtocol {
     
+    private var assetManager: AssetManager
+    
     var includedList: [String] {
         assetManager.whitelist.sorted()
     }
@@ -18,8 +20,6 @@ class WhitelistAdapter: AssetFilterAdapterProtocol {
         assetSet.subtract(assetManager.whitelist)
         return assetSet.sorted()
     }
-    
-    private var assetManager: AssetManager
     
     init(assetManager: AssetManager) {
         self.assetManager = assetManager

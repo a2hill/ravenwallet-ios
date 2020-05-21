@@ -326,15 +326,15 @@ extension UserDefaults {
 //MARK: - Asset Data
 extension UserDefaults {
     
-    static var assetFilter: AssetManager.AssetFilter {
+    static var assetFilter: AssetManager.AssetFilter? {
         get {
-            if let filterString = defaults.string(forKey: "assetFilter") {
-                return AssetManager.AssetFilter(rawValue: filterString) ?? .manual
-            }
-            return .manual
+            guard let filterString = defaults.string(forKey: "assetFilter") else { return nil }
+            
+            return AssetManager.AssetFilter(rawValue: filterString)
         }
         set {
-            defaults.set(newValue.rawValue, forKey: "assetFilter")
+            let value = newValue?.rawValue
+            defaults.set(value, forKey: "assetFilter")
         }
     }
 }

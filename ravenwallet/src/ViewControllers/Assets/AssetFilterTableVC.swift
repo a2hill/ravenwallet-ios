@@ -27,7 +27,11 @@ class AssetFilterTableVC: UITableViewController {
         }
     }
     
-    internal var adapter: AssetFilterAdapterProtocol!
+    internal var adapter: AssetFilterAdapterProtocol! {
+        didSet {
+            tableView.reloadData()
+        }
+    }
     
     private let emptyMessage = UILabel.wrapping(font: .customBody(size: 16.0), color: .grayTextTint)
     
