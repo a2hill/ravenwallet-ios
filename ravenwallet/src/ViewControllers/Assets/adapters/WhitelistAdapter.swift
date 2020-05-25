@@ -12,25 +12,32 @@ class WhitelistAdapter: AssetFilterAdapterProtocol {
     
     private var assetManager: AssetManager
     
-    var includedList: [String] {
-        assetManager.whitelist.sorted()
-    }
-    var excludedList: [String] {
-        var assetSet = Set<String>(assetManager.assetList.compactMap({$0.name}))
-        assetSet.subtract(assetManager.whitelist)
-        return assetSet.sorted()
-    }
+    var includedList: [String] = []
+    var excludedList: [String] = []
     
     init(assetManager: AssetManager) {
         self.assetManager = assetManager
+        
+        updateLists()
+    }
+    
+    private func updateLists() {
+        includedList = assetManager.whitelist.sorted()
+        
+        excludedList = assetManager.assetList
+            .map {$0.name}
+            .filter {!assetManager.whitelist.contains($0)}
+            .sorted()
     }
     
     func addToList(_ assetName: String) {
         assetManager.addToWhitelist(assetName: assetName)
+        updateLists()
     }
     
     func removeFromList(_ assetName: String) {
         assetManager.removeFromWhitelist(assetName: assetName)
+        updateLists()
     }
     
     func titleForList() -> String {
