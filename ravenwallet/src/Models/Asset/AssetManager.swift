@@ -39,6 +39,7 @@ class AssetManager {
             UserDefaults.assetFilter = assetFilter
         }
     }
+    
     var whitelist: Set<String> = []
     var blacklist: Set<String> = []
     
