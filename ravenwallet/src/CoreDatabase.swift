@@ -738,34 +738,40 @@ class CoreDatabase {
     
     //MARK: - Assets
     
+    func blockingLoadAssets() -> [Asset] {
+        var assets = [Asset]()
+        var sql: OpaquePointer? = nil
+        sqlite3_prepare_v2(self.db, "select Z_ID, Z_NAME, Z_AMOUNT, Z_UNITS, Z_REISSUBALE, Z_HAS_IPFS, Z_IPFS_HASH, Z_OWNERSHIP, Z_ISHIDDEN, Z_SORT from ZBRAsset  where (Z_AMOUNT != 0 OR (Z_AMOUNT == 0 AND Z_OWNERSHIP = 1) ) ORDER BY Z_SORT DESC", -1, &sql, nil)
+        defer { sqlite3_finalize(sql) }
+        
+        while sqlite3_step(sql) == SQLITE_ROW {
+            let idAsset = Int(sqlite3_column_int(sql, 0))
+            let name = String(cString: sqlite3_column_text(sql, 1))
+            let intAmount = sqlite3_column_int64(sql, 2)
+            let amount = intAmount >= 0 ? UInt64(sqlite3_column_int64(sql, 2)) : 0 //Todo : should never be 0
+            let units = UInt8(sqlite3_column_int(sql, 3))
+            let reissubale = UInt8(sqlite3_column_int(sql, 4))
+            let hasIpfs = UInt8(sqlite3_column_int(sql, 5))
+            let ipfsHash = String(cString: sqlite3_column_text(sql, 6))
+            let ownerShip = Int(sqlite3_column_int(sql, 7))
+            let hidden = Int(sqlite3_column_int(sql, 8))
+            let sort = Int(sqlite3_column_int(sql, 9))
+            
+            let p = Asset(idAsset: idAsset, name: name, amount: Satoshis(amount), units: units, reissubale: reissubale, hasIpfs: hasIpfs, ipfsHash: ipfsHash, ownerShip: ownerShip, hidden: hidden, sort: sort)
+            assets.append(p)
+        }
+        
+        if sqlite3_errcode(self.db) != SQLITE_DONE {
+            print("BMEX database loadAsset error")
+            print(String(cString: sqlite3_errmsg(self.db)))
+        }
+        
+        return assets
+    }
+    
     func loadAssets(callback: @escaping ([Asset])->Void) {
-        queue.async {
-            var assets = [Asset]()
-            var sql: OpaquePointer? = nil
-            sqlite3_prepare_v2(self.db, "select Z_ID, Z_NAME, Z_AMOUNT, Z_UNITS, Z_REISSUBALE, Z_HAS_IPFS, Z_IPFS_HASH, Z_OWNERSHIP, Z_ISHIDDEN, Z_SORT from ZBRAsset  where (Z_AMOUNT != 0 OR (Z_AMOUNT == 0 AND Z_OWNERSHIP = 1) ) ORDER BY Z_SORT DESC", -1, &sql, nil)
-            defer { sqlite3_finalize(sql) }
-            
-            while sqlite3_step(sql) == SQLITE_ROW {
-                let idAsset = Int(sqlite3_column_int(sql, 0))
-                let name = String(cString: sqlite3_column_text(sql, 1))
-                let intAmount = sqlite3_column_int64(sql, 2)
-                let amount = intAmount >= 0 ? UInt64(sqlite3_column_int64(sql, 2)) : 0 //Todo : should never be 0
-                let units = UInt8(sqlite3_column_int(sql, 3))
-                let reissubale = UInt8(sqlite3_column_int(sql, 4))
-                let hasIpfs = UInt8(sqlite3_column_int(sql, 5))
-                let ipfsHash = String(cString: sqlite3_column_text(sql, 6))
-                let ownerShip = Int(sqlite3_column_int(sql, 7))
-                let hidden = Int(sqlite3_column_int(sql, 8))
-                let sort = Int(sqlite3_column_int(sql, 9))
-                
-                let p = Asset(idAsset: idAsset, name: name, amount: Satoshis(amount), units: units, reissubale: reissubale, hasIpfs: hasIpfs, ipfsHash: ipfsHash, ownerShip: ownerShip, hidden: hidden, sort: sort)
-                assets.append(p)
-            }
-            
-            if sqlite3_errcode(self.db) != SQLITE_DONE {
-                print("BMEX database loadAsset error")
-                print(String(cString: sqlite3_errmsg(self.db)))
-            }
+        queue.async { [weak self] in
+            guard let assets = self?.blockingLoadAssets() else { return }
             DispatchQueue.main.async {
                 callback(assets)
             }

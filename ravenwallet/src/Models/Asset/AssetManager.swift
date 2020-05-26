@@ -68,14 +68,21 @@ class AssetManager {
             assetFilter = .blacklist
             UserDefaults.assetFilter = .blacklist // Need to manually do this as 'didSet' is not called during initialization
             
-            loadAsset() { [weak self] assets in
-                guard let self = self else { return }
-                
-                assets.filter({$0.isHidden}).forEach({self.addToBlacklist(assetName: $0.name)})
-                self.loadWhitelist()
-//                self.loadBlacklist()
+            blockingLoadAssets()
+            
+            assetList.filter {
+                $0.isHidden
+            }.forEach {
+                self.addToBlacklist(assetName: $0.name)
             }
+            
+            self.loadWhitelist()
         }
+    }
+    
+    private func blockingLoadAssets() {
+        guard let assets = db?.blockingLoadAssets() else { return }
+        assetList = assets
     }
     
     func loadAsset(callBack: (([Asset]) -> Void)? = nil) {
