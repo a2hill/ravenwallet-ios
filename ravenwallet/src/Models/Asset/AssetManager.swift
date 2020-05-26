@@ -26,7 +26,9 @@ class AssetManager {
     
     static let shared = AssetManager()
 
-    var db: CoreDatabase?
+    private var db: CoreDatabase?
+//    private var semaphore = DispatchSemaphore(value: 1)
+    
     var assetList:[Asset] = []
     var showedAssetList:[Asset] {
         get {
@@ -71,18 +73,17 @@ class AssetManager {
                 
                 assets.filter({$0.isHidden}).forEach({self.addToBlacklist(assetName: $0.name)})
                 self.loadWhitelist()
-                self.loadBlacklist()
+//                self.loadBlacklist()
             }
         }
     }
     
     func loadAsset(callBack: (([Asset]) -> Void)? = nil) {
-        db = CoreDatabase()
+//        db = CoreDatabase()
         db?.loadAssets(callback: { assets in
             self.assetList = assets
-            if callBack != nil {
-                callBack!(assets)
-            }
+            
+            callBack?(assets)
         })
     }
     

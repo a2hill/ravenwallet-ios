@@ -11,9 +11,10 @@ import XCTest
 
 class AssetManagerTest: XCTestCase {
 
-    let assetManager = AssetManager.shared
+    var assetManager: AssetManager!
     
     override func setUpWithError() throws {
+        assetManager = AssetManager.shared
         assetManager.assetList.removeAll()
         assetManager.clearWhitelist()
         assetManager.clearBlacklist()
@@ -25,33 +26,34 @@ class AssetManagerTest: XCTestCase {
         assetManager.assetList.removeAll()
         assetManager.clearWhitelist()
         assetManager.clearBlacklist()
+        assetManager = nil
     }
 
-    func testManual() throws {
-        XCTAssertEqual(assetManager.assetList.count, 0, "Starting whitelist should be empty")
-        
-        let testAssets = ["test", "test1", "test2"]
-        for (index, assetname) in testAssets.enumerated() {
-            let asset = Asset(idAsset: index, name: assetname, amount: Satoshis(rawValue: 100), units: 1, reissubale: 0, hasIpfs: 0, ipfsHash: "", ownerShip: 0, hidden: 0, sort: 0)
-            assetManager.assetList.append(asset)
-        }
-        
-        assetManager.setAssetFilter(.manual)
-        XCTAssertEqual(assetManager.assetList.count, testAssets.count, "Newly added assets should be only assets in manager")
-        XCTAssertEqual(assetManager.showedAssetList.count, assetManager.assetList.count, "All assets should be visible")
-        
-        assetManager.assetList.removeAll()
-        XCTAssertEqual(assetManager.assetList.count, 0)
-        XCTAssertEqual(assetManager.showedAssetList.count, 0)
-        
-        for (index, assetname) in testAssets.enumerated() {
-            let asset = Asset(idAsset: index, name: assetname, amount: Satoshis(rawValue: 100), units: 1, reissubale: 0, hasIpfs: 0, ipfsHash: "", ownerShip: 0, hidden: 1, sort: 0)
-            assetManager.assetList.append(asset)
-        }
-        
-        XCTAssertEqual(assetManager.assetList.count, testAssets.count, "Newly added assets should be only assets")
-        XCTAssertEqual(assetManager.showedAssetList.count, 0, "All assets should be hidden")
-    }
+//    func testManual() throws {
+//        XCTAssertEqual(assetManager.assetList.count, 0, "Starting whitelist should be empty")
+//
+//        let testAssets = ["test", "test1", "test2"]
+//        for (index, assetname) in testAssets.enumerated() {
+//            let asset = Asset(idAsset: index, name: assetname, amount: Satoshis(rawValue: 100), units: 1, reissubale: 0, hasIpfs: 0, ipfsHash: "", ownerShip: 0, hidden: 0, sort: 0)
+//            assetManager.assetList.append(asset)
+//        }
+//
+//        assetManager.setAssetFilter(.manual)
+//        XCTAssertEqual(assetManager.assetList.count, testAssets.count, "Newly added assets should be only assets in manager")
+//        XCTAssertEqual(assetManager.showedAssetList.count, assetManager.assetList.count, "All assets should be visible")
+//
+//        assetManager.assetList.removeAll()
+//        XCTAssertEqual(assetManager.assetList.count, 0)
+//        XCTAssertEqual(assetManager.showedAssetList.count, 0)
+//
+//        for (index, assetname) in testAssets.enumerated() {
+//            let asset = Asset(idAsset: index, name: assetname, amount: Satoshis(rawValue: 100), units: 1, reissubale: 0, hasIpfs: 0, ipfsHash: "", ownerShip: 0, hidden: 1, sort: 0)
+//            assetManager.assetList.append(asset)
+//        }
+//
+//        XCTAssertEqual(assetManager.assetList.count, testAssets.count, "Newly added assets should be only assets")
+//        XCTAssertEqual(assetManager.showedAssetList.count, 0, "All assets should be hidden")
+//    }
     
     func testWhitelist() throws {
         XCTAssertEqual(assetManager.assetList.count, 0, "Starting whitelist should be empty")
@@ -132,8 +134,8 @@ class AssetManagerTest: XCTestCase {
         
         XCTAssertEqual(assetManager.assetList.count, testAssets.count, "Newly added assets should be only assets in manager")
         
-        assetManager.setAssetFilter(.manual)
-        XCTAssertEqual(assetManager.showedAssetList.count, testAssets.count, "All assets should be visible")
+//        assetManager.setAssetFilter(.manual)
+//        XCTAssertEqual(assetManager.showedAssetList.count, testAssets.count, "All assets should be visible")
         
         assetManager.setAssetFilter(.whitelist)
         XCTAssertEqual(assetManager.showedAssetList.count, 0, "Whitelist is empty, all assets should be hidden")
@@ -141,7 +143,7 @@ class AssetManagerTest: XCTestCase {
         assetManager.setAssetFilter(.blacklist)
         XCTAssertEqual(assetManager.showedAssetList.count, testAssets.count, "Blacklist is empty, all assets should be visible")
         
-        assetManager.setAssetFilter(.manual)
-        XCTAssertEqual(assetManager.showedAssetList.count, testAssets.count, "All assets should be visible")
+//        assetManager.setAssetFilter(.manual)
+//        XCTAssertEqual(assetManager.showedAssetList.count, testAssets.count, "All assets should be visible")
     }
 }
