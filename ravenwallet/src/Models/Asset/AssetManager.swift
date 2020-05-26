@@ -64,6 +64,8 @@ class AssetManager {
             // If there is no previous filter then we will blacklist any previously hidden assets
             // as a blacklist is analogous to the previous hide/display by default paradigm
             assetFilter = .blacklist
+            UserDefaults.assetFilter = .blacklist // Need to manually do this as 'didSet' is not called during initialization
+            
             loadAsset() { [weak self] assets in
                 guard let self = self else { return }
                 
