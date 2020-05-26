@@ -15,6 +15,13 @@ class AssetManager {
     enum AssetFilter: String, CaseIterable {
         case whitelist
         case blacklist
+        
+        var displayString: String {
+            switch self {
+            case .whitelist: return S.Asset.whitelist
+            case .blacklist: return S.Asset.blacklist
+            }
+        }
     }
     
     static let shared = AssetManager()

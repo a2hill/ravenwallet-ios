@@ -20,10 +20,17 @@ class ManageAssetDisplayVC : UIViewController, Subscriber {
     private var assetFilterListVC: AssetFilterTableVC!
     private var isLoginRequired = false
     private let headerContainer = UIView()
+    
+    private let filters: [AssetManager.AssetFilter] = [
+        .blacklist,
+        .whitelist
+    ]
     private let filterSelectorView = UIView()
-    private let filterSelectorControl = UISegmentedControl(items: ["Whitelist", "Blacklist"])
+    private let filterSelectorControl: UISegmentedControl
+    
     private let whitelistAdapter: WhitelistAdapter
     private let blacklistAdapter: BlacklistAdapter
+    
     private var shouldShowStatusBar: Bool = true {
         didSet {
             if oldValue != shouldShowStatusBar {
@@ -40,8 +47,15 @@ class ManageAssetDisplayVC : UIViewController, Subscriber {
         self.whitelistAdapter = WhitelistAdapter(assetManager: AssetManager.shared)
         self.blacklistAdapter = BlacklistAdapter(assetManager: AssetManager.shared)
         
+        // Filter setup
+        self.filterSelectorControl = UISegmentedControl(items: filters.map({$0.displayString}))
+        
         super.init(nibName: nil, bundle: nil)
-        showFilterList(AssetManager.shared.assetFilter)
+        
+        let assetFilter = AssetManager.shared.assetFilter
+        filterSelectorControl.selectedSegmentIndex = filters.firstIndex(of: assetFilter)!
+        filterSelectorControl.valueChanged = filterSelectorDidChange
+        showFilterList(assetFilter)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -99,9 +113,6 @@ extension ManageAssetDisplayVC {
             
         ])
         
-        filterSelectorControl.valueChanged = filterSelectorDidChange
-        filterSelectorControl.selectedSegmentIndex = AssetManager.AssetFilter.allCases.firstIndex(of: AssetManager.shared.assetFilter)!
-        
         // Filter list view controller
         addChild(assetFilterListVC, layout: {
             if #available(iOS 11.0, *) {
@@ -142,8 +153,10 @@ extension ManageAssetDisplayVC {
 //MARK: - Handlers
 extension ManageAssetDisplayVC {
     func filterSelectorDidChange() {
+        
         let index = filterSelectorControl.selectedSegmentIndex
-        let filter = AssetManager.AssetFilter.allCases[index]
+        let filter = filters[index]
+        
         AssetManager.shared.setAssetFilter(filter)
         
         showFilterList(filter)
