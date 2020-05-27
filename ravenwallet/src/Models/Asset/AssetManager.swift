@@ -27,7 +27,6 @@ class AssetManager {
     static let shared = AssetManager()
 
     private var db: CoreDatabase?
-//    private var semaphore = DispatchSemaphore(value: 1)
     
     var assetList:[Asset] = []
     var showedAssetList:[Asset] {
@@ -35,10 +34,14 @@ class AssetManager {
             switch assetFilter {
                 
             case .whitelist:
-                return assetList.filter({whitelist.contains($0.name)})
+                return assetList.filter {
+                    whitelist.contains($0.name)
+                }
                 
             case .blacklist:
-                return assetList.filter({!blacklist.contains($0.name)})
+                return assetList.filter {
+                    !blacklist.contains($0.name)
+                }
             }
         }
     }
@@ -49,8 +52,8 @@ class AssetManager {
         }
     }
     
-    var whitelist: Set<String> = []
-    var blacklist: Set<String> = []
+    private(set) var whitelist: Set<String> = []
+    private(set) var blacklist: Set<String> = []
     
     private init() {
         db = CoreDatabase()
@@ -68,7 +71,7 @@ class AssetManager {
             assetFilter = .blacklist
             UserDefaults.assetFilter = .blacklist // Need to manually do this as 'didSet' is not called during initialization
             
-            blockingLoadAssets()
+            loadAssetsBlocking()
             
             assetList.filter {
                 $0.isHidden
@@ -80,46 +83,34 @@ class AssetManager {
         }
     }
     
-    private func blockingLoadAssets() {
+    private func loadAssetsBlocking() {
         guard let assets = db?.blockingLoadAssets() else { return }
         assetList = assets
     }
     
+    private func loadWhitelist() {
+        guard let dbWhitelist = db?.loadWhitelistBlocking() else { return }
+        
+        for asset in dbWhitelist {
+            whitelist.insert(asset)
+        }
+    }
+    
+    private func loadBlacklist() {
+        guard let dbBlacklist = db?.loadBlacklistBlocking() else { return }
+        
+        for asset in dbBlacklist {
+            blacklist.insert(asset)
+        }
+    }
+    
     func loadAsset(callBack: (([Asset]) -> Void)? = nil) {
-//        db = CoreDatabase()
         db?.loadAssets(callback: { assets in
             self.assetList = assets
             
             callBack?(assets)
         })
     }
-    
-    private func loadWhitelist(callback: (() -> Void)? = nil) {
-        db?.loadWhitelist(callback: { [weak self] whitelist in
-            
-            self?.whitelist.removeAll(keepingCapacity: true)
-            
-            for asset in whitelist {
-                self?.whitelist.insert(asset)
-            }
-            
-            callback?()
-        })
-    }
-    
-    private func loadBlacklist(callback: (() -> Void)? = nil) {
-        db?.loadBlacklist(callback: { [weak self] blacklist in
-
-            self?.blacklist.removeAll(keepingCapacity: true)
-
-            for asset in blacklist {
-                self?.blacklist.insert(asset)
-            }
-
-            callback?()
-        })
-    }
-
     
     func updateAssetOrder(assets:[Asset]) {
         var orderId = assets.count
@@ -169,9 +160,8 @@ class AssetManager {
     }
     
     func clearWhitelist() {
-        db?.clearWhitelist {
-            //TODO: Is this necessary?
-        }
+        whitelist.removeAll()
+        db?.clearWhitelist()
     }
     
     //MARK: Asset Filter - Blacklist
@@ -197,8 +187,7 @@ class AssetManager {
     }
     
     func clearBlacklist() {
-        db?.clearBlacklist {
-            //TODO: Is this necessary?
-        }
+        blacklist.removeAll()
+        db?.clearBlacklist()
     }
 }

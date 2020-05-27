@@ -870,6 +870,10 @@ class CoreDatabase {
     
     //MARK: Asset Whitelist
     
+    func loadWhitelistBlocking() -> [String] {
+        return self.loadAssetNames(from: .whitelist)
+    }
+    
     func loadWhitelist(callback: @escaping ([String]) -> Void) {
         queue.async {
             let whitelist = self.loadAssetNames(from: .whitelist)
@@ -892,10 +896,10 @@ class CoreDatabase {
         }
     }
     
-    func clearWhitelist(callback: @escaping () -> Void) {
+    func clearWhitelist(callback: (() -> Void)? = nil) {
         queue.async {
             self.clear(table: .whitelist)
-            callback()
+            callback?()
         }
     }
     
@@ -906,6 +910,10 @@ class CoreDatabase {
             let list = self.loadAssetNames(from: .blacklist)
             callback(list)
         }
+    }
+    
+    func loadBlacklistBlocking() -> [String] {
+        return self.loadAssetNames(from: .blacklist)
     }
     
     func addToBlacklist(assetName: String, callback: ((Bool) -> Void)? = nil) {
@@ -922,10 +930,10 @@ class CoreDatabase {
         }
     }
     
-    func clearBlacklist(callback: @escaping () -> Void) {
+    func clearBlacklist(callback: (() -> Void)? = nil){
         queue.async {
             self.clear(table: .blacklist)
-            callback()
+            callback?()
         }
     }
     
