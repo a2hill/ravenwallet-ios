@@ -67,17 +67,14 @@ class AssetManager {
         }else {
             
             // If there is no previous filter then we will blacklist any previously hidden assets
-            // as a blacklist is analogous to the previous hide/display by default paradigm
+            // as a blacklist is analogous to the previous hide/display by paradigm
             assetFilter = .blacklist
             UserDefaults.assetFilter = .blacklist // Need to manually do this as 'didSet' is not called during initialization
             
             loadAssetsBlocking()
+            loadBlacklist()
             
-            assetList.filter {
-                $0.isHidden
-            }.forEach {
-                self.addToBlacklist(assetName: $0.name)
-            }
+            assetList.filter { $0.isHidden }.forEach { self.addToBlacklist(assetName: $0.name )}
             
             self.loadWhitelist()
         }
